@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Financial Dashboard PRO</title>
+  <title>VN Financial Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -34,6 +34,7 @@
       display: inline-block;
       padding: 10px;
       animation: scroll 18s linear infinite;
+      font-size: 16px;
     }
 
     @keyframes scroll {
@@ -47,7 +48,7 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 10px;
     }
 
@@ -58,8 +59,18 @@
       text-align: center;
     }
 
+    .symbol {
+      font-weight: bold;
+      font-size: 18px;
+    }
+
     .price {
-      font-size: 24px;
+      font-size: 22px;
+      margin-top: 5px;
+    }
+
+    .change {
+      font-size: 16px;
       margin-top: 5px;
     }
 
@@ -78,6 +89,7 @@
       padding: 15px;
       text-align: center;
       background: #020617;
+      font-size: 14px;
     }
   </style>
 </head>
@@ -85,11 +97,13 @@
 <body>
 
 <header>
-  HỆ THỐNG CẬP NHẬT TÀI CHÍNH REALTIME
+  HỆ THỐNG CẬP NHẬT TÀI CHÍNH VIỆT NAM
 </header>
 
 <div class="ticker">
-  <span>🔥 Tin nóng: Crypto biến động mạnh | Bitcoin dẫn sóng | Thị trường toàn cầu hồi phục</span>
+  <span>
+    🔥 Tin nóng: VN-Index biến động | Dòng tiền quay lại nhóm ngân hàng | Khối ngoại mua ròng | Thị trường chờ tín hiệu từ FED
+  </span>
 </div>
 
 <div class="container">
@@ -102,7 +116,8 @@
 </footer>
 
 <script>
-const coins = ["bitcoin", "ethereum", "binancecoin", "solana"];
+const symbols = ["^VNINDEX","VCB.VN","VNM.VN","HPG.VN","FPT.VN"];
+
 let chartData = [];
 let labels = [];
 
@@ -113,9 +128,9 @@ const chart = new Chart(ctx, {
   data: {
     labels: labels,
     datasets: [{
-      label: 'BTC Price',
+      label: 'VN-Index',
       data: chartData,
-      borderWidth: 2,
+      borderColor: "#3b82f6",
       tension: 0.3
     }]
   },
@@ -129,44 +144,47 @@ const chart = new Chart(ctx, {
 });
 
 async function fetchData() {
-  const url = `https://api.coingecko.com/api/v3/simple/price?ids=${coins.join(",")}&vs_currencies=usd&include_24hr_change=true`;
+  try {
+    const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols.join(",")}`;
+    const res = await fetch(url);
+    const data = await res.json();
 
-  const res = await fetch(url);
-  const data = await res.json();
+    const container = document.getElementById("market");
+    container.innerHTML = "";
 
-  const container = document.getElementById("market");
-  container.innerHTML = "";
+    data.quoteResponse.result.forEach(item => {
+      const price = item.regularMarketPrice;
+      const change = item.regularMarketChangePercent;
 
-  coins.forEach(c => {
-    const price = data[c].usd;
-    const change = data[c].usd_24h_change;
+      const div = document.createElement("div");
+      div.className = "card";
 
-    const div = document.createElement("div");
-    div.className = "card";
+      div.innerHTML = `
+        <div class="symbol">${item.symbol}</div>
+        <div class="price">${price}</div>
+        <div class="change ${change >= 0 ? 'up' : 'down'}">
+          ${change ? change.toFixed(2) : 0}%
+        </div>
+      `;
 
-    div.innerHTML = `
-      <div>${c.toUpperCase()}</div>
-      <div class="price">$${price.toLocaleString()}</div>
-      <div class="${change >= 0 ? 'up' : 'down'}">
-        ${change.toFixed(2)}%
-      </div>
-    `;
+      container.appendChild(div);
 
-    container.appendChild(div);
+      if (item.symbol === "^VNINDEX") {
+        chartData.push(price);
+        labels.push(new Date().toLocaleTimeString());
 
-    // chart BTC
-    if (c === "bitcoin") {
-      chartData.push(price);
-      labels.push(new Date().toLocaleTimeString());
-
-      if (chartData.length > 20) {
-        chartData.shift();
-        labels.shift();
+        if (chartData.length > 20) {
+          chartData.shift();
+          labels.shift();
+        }
       }
-    }
-  });
+    });
 
-  chart.update();
+    chart.update();
+
+  } catch (err) {
+    console.log("API lỗi:", err);
+  }
 }
 
 fetchData();
