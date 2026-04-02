@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Financial Dashboard PRO</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial;
+      background: #0a0f1c;
+      color: white;
+    }
+
+    header {
+      padding: 18px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      background: #020617;
+      border-bottom: 2px solid #1e293b;
+    }
+
+    .ticker {
+      background: #111827;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .ticker span {
+      display: inline-block;
+      padding: 10px;
+      animation: scroll 18s linear infinite;
+    }
+
+    @keyframes scroll {
+      from { transform: translateX(100%); }
+      to { transform: translateX(-100%); }
+    }
+
+    .container {
+      padding: 12px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .price {
+      font-size: 24px;
+      margin-top: 5px;
+    }
+
+    .up { color: #22c55e; }
+    .down { color: #ef4444; }
+
+    canvas {
+      margin-top: 15px;
+      background: #020617;
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    footer {
+      margin-top: 10px;
+      padding: 15px;
+      text-align: center;
+      background: #020617;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  HỆ THỐNG CẬP NHẬT TÀI CHÍNH REALTIME
+</header>
+
+<div class="ticker">
+  <span>🔥 Tin nóng: Crypto biến động mạnh | Bitcoin dẫn sóng | Thị trường toàn cầu hồi phục</span>
+</div>
+
+<div class="container">
+  <div class="grid" id="market"></div>
+  <canvas id="chart" height="100"></canvas>
+</div>
+
+<footer>
+  Design bởi Nam Tran | Email: svdrecdivo@gmail.com
+</footer>
+
+<script>
+const coins = ["bitcoin", "ethereum", "binancecoin", "solana"];
+let chartData = [];
+let labels = [];
+
+const ctx = document.getElementById('chart').getContext('2d');
+
+const chart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: labels,
+    datasets: [{
+      label: 'BTC Price',
+      data: chartData,
+      borderWidth: 2,
+      tension: 0.3
+    }]
+  },
+  options: {
+    plugins: { legend: { labels: { color: "white" } } },
+    scales: {
+      x: { ticks: { color: "white" } },
+      y: { ticks: { color: "white" } }
+    }
+  }
+});
+
+async function fetchData() {
+  const url = `https://api.coingecko.com/api/v3/simple/price?ids=${coins.join(",")}&vs_currencies=usd&include_24hr_change=true`;
+
+  const res = await fetch(url);
+  const data = await res.json();
+
+  const container = document.getElementById("market");
+  container.innerHTML = "";
+
+  coins.forEach(c => {
+    const price = data[c].usd;
+    const change = data[c].usd_24h_change;
+
+    const div = document.createElement("div");
+    div.className = "card";
+
+    div.innerHTML = `
+      <div>${c.toUpperCase()}</div>
+      <div class="price">$${price.toLocaleString()}</div>
+      <div class="${change >= 0 ? 'up' : 'down'}">
+        ${change.toFixed(2)}%
+      </div>
+    `;
+
+    container.appendChild(div);
+
+    // chart BTC
+    if (c === "bitcoin") {
+      chartData.push(price);
+      labels.push(new Date().toLocaleTimeString());
+
+      if (chartData.length > 20) {
+        chartData.shift();
+        labels.shift();
+      }
+    }
+  });
+
+  chart.update();
+}
+
+fetchData();
+setInterval(fetchData, 10000);
+</script>
+
+</body>
+</html>
