@@ -3,131 +3,145 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nam Financial Terminal Pro</title>
-
+<title>Nam Terminal Ultra</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 :root{
-  --bg:#0b0f14;
-  --panel:#121821;
-  --text:#e6e6e6;
-  --green:#00ff9c;
-  --red:#ff4d4d;
+  --bg:#05070d;
+  --panel:#0f172a;
+  --border:#1e293b;
+  --text:#e5e7eb;
+  --green:#22c55e;
+  --red:#ef4444;
 }
 
 body{margin:0;font-family:Inter;background:var(--bg);color:var(--text)}
 
 header{
-  padding:20px;
+  padding:18px;
   text-align:center;
-  background:#0f141c;
-  border-bottom:1px solid #1f2a36;
+  font-size:22px;
+  font-weight:700;
+  background:#020617;
+  border-bottom:1px solid var(--border);
 }
-
-header h1{margin:0;font-size:24px}
 
 .ticker{
   background:#000;
-  color:var(--green);
-  padding:8px;
-  font-family:monospace;
-  white-space:nowrap;
-  overflow:hidden;
+  color:#22c55e;
+  padding:10px;
+  font-size:15px;
 }
 
 .container{
   display:grid;
-  grid-template-columns:2fr 1fr;
+  grid-template-columns:2.5fr 1fr;
   gap:12px;
   padding:12px;
 }
 
 .panel{
   background:var(--panel);
-  border-radius:12px;
+  border:1px solid var(--border);
+  border-radius:10px;
   padding:12px;
 }
 
-.grid{
+.title{
+  font-size:16px;
+  font-weight:600;
+  margin-bottom:10px;
+  border-bottom:1px solid var(--border);
+  padding-bottom:6px;
+}
+
+.market-grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  grid-template-columns:repeat(4,1fr);
   gap:10px;
 }
 
 .card{
-  background:#0f141c;
+  background:#020617;
   padding:12px;
   border-radius:8px;
   text-align:center;
 }
 
-.symbol{font-weight:600}
-.price{font-size:18px;margin-top:5px}
-.change{font-size:14px;margin-top:4px}
+.symbol{font-size:14px;color:#9ca3af}
+.price{font-size:20px;font-weight:600}
+.change{font-size:14px}
 
 .green{color:var(--green)}
 .red{color:var(--red)}
 
-.section-title{
-  margin:10px 0;
-  font-size:14px;
-  border-bottom:1px solid #1f2a36;
-  padding-bottom:5px;
+.big-number{
+  font-size:28px;
+  font-weight:700;
 }
 
-canvas{
+.info-box{
   background:#020617;
-  border-radius:10px;
-  margin-top:10px;
+  padding:10px;
+  border-radius:8px;
+  margin-bottom:10px;
 }
 
-footer{
-  text-align:center;
-  padding:10px;
-  background:#000;
+.heatmap{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:8px;
 }
+
+.box{
+  padding:12px;
+  border-radius:6px;
+  text-align:center;
+  font-size:14px;
+}
+
+canvas{margin-top:10px}
+
+footer{text-align:center;padding:10px;background:#000}
+
 </style>
 </head>
 
 <body>
 
-<header>
-<h1>📊 NAM FINANCIAL TERMINAL PRO</h1>
-</header>
+<header>📊 NAM TERMINAL ULTRA</header>
 
-<div class="ticker" id="ticker">Loading VN Market...</div>
+<div class="ticker" id="ticker">Loading...</div>
 
 <div class="container">
 
 <!-- LEFT -->
 <div class="panel">
-<div class="section-title">📈 VN MARKET</div>
-<div class="grid" id="market"></div>
+<div class="title">📈 VN MARKET SNAPSHOT</div>
+<div class="market-grid" id="market"></div>
 
-<div class="section-title">📊 VNINDEX LIVE</div>
-<canvas id="chart" height="120"></canvas>
+<div class="title">📊 VNINDEX LIVE</div>
+<div class="big-number" id="vnindex">--</div>
+<canvas id="chart" height="100"></canvas>
 </div>
 
 <!-- RIGHT -->
 <div class="panel">
-<div class="section-title">🌐 GLOBAL</div>
-<div id="global"></div>
+<div class="title">🌍 GLOBAL</div>
+<div class="info-box" id="global"></div>
 
-<div class="section-title">🔥 SECTOR HEATMAP</div>
-<div id="heatmap"></div>
+<div class="title">🔥 HEATMAP</div>
+<div class="heatmap" id="heatmap"></div>
 </div>
 
 </div>
 
-<footer>
-Trang web được thiết kế bởi Nam ko Hề
-</footer>
+<footer>Trang web được thiết kế bởi Nam ko Hề</footer>
 
 <script>
-
-const symbols=["VCB","BID","CTG","HPG","FPT","MWG","GAS","SSI","VNM"];
+const symbols=["VCB","BID","CTG","HPG","FPT","MWG","GAS","SSI","VNM","TPB","MBB","ACB"];
 
 let chartData=[];
 let labels=[];
@@ -136,11 +150,11 @@ const ctx=document.getElementById('chart').getContext('2d');
 
 const chart=new Chart(ctx,{
   type:'line',
-  data:{labels:labels,datasets:[{label:'VNINDEX',data:chartData,borderColor:'#3b82f6',tension:0.3}]},
+  data:{labels:labels,datasets:[{label:'VNINDEX',data:chartData,borderColor:'#3b82f6'}]},
   options:{plugins:{legend:{labels:{color:'white'}}},scales:{x:{ticks:{color:'white'}},y:{ticks:{color:'white'}}}}
 });
 
-async function loadVNStock(){
+async function loadVN(){
   try{
     const url="https://api.allorigins.win/raw?url=https://priceboard.vcbs.com.vn/api/price?codes="+symbols.join(",");
     const res=await fetch(url);
@@ -161,7 +175,16 @@ async function loadVNStock(){
 
     document.getElementById("market").innerHTML=html;
 
-  }catch(e){console.log(e)}
+    let vn=1200+Math.random()*20;
+    document.getElementById("vnindex").innerText=vn.toFixed(2);
+
+    chartData.push(vn);
+    labels.push(new Date().toLocaleTimeString());
+
+    if(chartData.length>25){chartData.shift();labels.shift();}
+    chart.update();
+
+  }catch(e){}
 }
 
 async function loadGlobal(){
@@ -172,49 +195,37 @@ async function loadGlobal(){
   let oil=85+Math.random()*5;
 
   document.getElementById("global").innerHTML=`
-    USD/VND: ${d.rates.VND.toFixed(0)}<br>
-    EUR/USD: ${(1/d.rates.EUR).toFixed(2)}<br>
-    GOLD: ${gold.toFixed(0)}<br>
-    OIL: ${oil.toFixed(0)}
+    <div>USD/VND: <b>${d.rates.VND.toFixed(0)}</b></div>
+    <div>EUR/USD: <b>${(1/d.rates.EUR).toFixed(2)}</b></div>
+    <div>GOLD: <b>${gold.toFixed(0)}</b></div>
+    <div>OIL: <b>${oil.toFixed(0)}</b></div>
   `;
 
-  document.getElementById("ticker").innerText=`VN Market | USD ${d.rates.VND.toFixed(0)} | GOLD ${gold.toFixed(0)} | OIL ${oil.toFixed(0)}`;
+  document.getElementById("ticker").innerText=`USD ${d.rates.VND.toFixed(0)} | GOLD ${gold.toFixed(0)} | OIL ${oil.toFixed(0)}`;
 }
 
 function loadHeatmap(){
   const sectors=["Bank","Oil","Steel","Tech","Retail","Export"];
-
   let html="";
+
   sectors.forEach(s=>{
     let val=Math.random();
     let g=Math.floor(255*val);
     let r=255-g;
-    html+=`<div style="background:rgb(${r},${g},80);padding:10px;border-radius:6px;margin:4px 0">${s}</div>`;
+    html+=`<div class="box" style="background:rgb(${r},${g},80)">${s}</div>`;
   });
 
   document.getElementById("heatmap").innerHTML=html;
 }
 
-function updateChart(){
-  let vn=1200+Math.random()*20;
-
-  chartData.push(vn);
-  labels.push(new Date().toLocaleTimeString());
-
-  if(chartData.length>20){chartData.shift();labels.shift();}
-
-  chart.update();
-}
-
 function run(){
-  loadVNStock();
+  loadVN();
   loadGlobal();
   loadHeatmap();
-  updateChart();
 }
 
 run();
-setInterval(run,10000);
+setInterval(run,8000);
 
 </script>
 
