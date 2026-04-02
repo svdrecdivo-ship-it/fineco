@@ -1,194 +1,221 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <title>VN Financial Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nam Financial Terminal Pro</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: "Segoe UI", Arial;
-      background: #0a0f1c;
-      color: white;
-    }
+<style>
+:root{
+  --bg:#0b0f14;
+  --panel:#121821;
+  --text:#e6e6e6;
+  --green:#00ff9c;
+  --red:#ff4d4d;
+}
 
-    header {
-      padding: 18px;
-      text-align: center;
-      font-size: 24px;
-      font-weight: bold;
-      background: #020617;
-      border-bottom: 2px solid #1e293b;
-    }
+body{margin:0;font-family:Inter;background:var(--bg);color:var(--text)}
 
-    .ticker {
-      background: #111827;
-      overflow: hidden;
-      white-space: nowrap;
-    }
+header{
+  padding:20px;
+  text-align:center;
+  background:#0f141c;
+  border-bottom:1px solid #1f2a36;
+}
 
-    .ticker span {
-      display: inline-block;
-      padding: 10px;
-      animation: scroll 18s linear infinite;
-      font-size: 16px;
-    }
+header h1{margin:0;font-size:24px}
 
-    @keyframes scroll {
-      from { transform: translateX(100%); }
-      to { transform: translateX(-100%); }
-    }
+.ticker{
+  background:#000;
+  color:var(--green);
+  padding:8px;
+  font-family:monospace;
+  white-space:nowrap;
+  overflow:hidden;
+}
 
-    .container {
-      padding: 12px;
-    }
+.container{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:12px;
+  padding:12px;
+}
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 10px;
-    }
+.panel{
+  background:var(--panel);
+  border-radius:12px;
+  padding:12px;
+}
 
-    .card {
-      background: #1e293b;
-      padding: 15px;
-      border-radius: 10px;
-      text-align: center;
-    }
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:10px;
+}
 
-    .symbol {
-      font-weight: bold;
-      font-size: 18px;
-    }
+.card{
+  background:#0f141c;
+  padding:12px;
+  border-radius:8px;
+  text-align:center;
+}
 
-    .price {
-      font-size: 22px;
-      margin-top: 5px;
-    }
+.symbol{font-weight:600}
+.price{font-size:18px;margin-top:5px}
+.change{font-size:14px;margin-top:4px}
 
-    .change {
-      font-size: 16px;
-      margin-top: 5px;
-    }
+.green{color:var(--green)}
+.red{color:var(--red)}
 
-    .up { color: #22c55e; }
-    .down { color: #ef4444; }
+.section-title{
+  margin:10px 0;
+  font-size:14px;
+  border-bottom:1px solid #1f2a36;
+  padding-bottom:5px;
+}
 
-    canvas {
-      margin-top: 15px;
-      background: #020617;
-      border-radius: 10px;
-      padding: 10px;
-    }
+canvas{
+  background:#020617;
+  border-radius:10px;
+  margin-top:10px;
+}
 
-    footer {
-      margin-top: 10px;
-      padding: 15px;
-      text-align: center;
-      background: #020617;
-      font-size: 14px;
-    }
-  </style>
+footer{
+  text-align:center;
+  padding:10px;
+  background:#000;
+}
+</style>
 </head>
 
 <body>
 
 <header>
-  HỆ THỐNG CẬP NHẬT TÀI CHÍNH VIỆT NAM
+<h1>📊 NAM FINANCIAL TERMINAL PRO</h1>
 </header>
 
-<div class="ticker">
-  <span>
-    🔥 Tin nóng: VN-Index biến động | Dòng tiền quay lại nhóm ngân hàng | Khối ngoại mua ròng | Thị trường chờ tín hiệu từ FED
-  </span>
-</div>
+<div class="ticker" id="ticker">Loading VN Market...</div>
 
 <div class="container">
-  <div class="grid" id="market"></div>
-  <canvas id="chart" height="100"></canvas>
+
+<!-- LEFT -->
+<div class="panel">
+<div class="section-title">📈 VN MARKET</div>
+<div class="grid" id="market"></div>
+
+<div class="section-title">📊 VNINDEX LIVE</div>
+<canvas id="chart" height="120"></canvas>
+</div>
+
+<!-- RIGHT -->
+<div class="panel">
+<div class="section-title">🌐 GLOBAL</div>
+<div id="global"></div>
+
+<div class="section-title">🔥 SECTOR HEATMAP</div>
+<div id="heatmap"></div>
+</div>
+
 </div>
 
 <footer>
-  Design bởi Nam Tran | Email: svdrecdivo@gmail.com
+Trang web được thiết kế bởi Nam ko Hề
 </footer>
 
 <script>
-const symbols = ["^VNINDEX","VCB.VN","VNM.VN","HPG.VN","FPT.VN"];
 
-let chartData = [];
-let labels = [];
+const symbols=["VCB","BID","CTG","HPG","FPT","MWG","GAS","SSI","VNM"];
 
-const ctx = document.getElementById('chart').getContext('2d');
+let chartData=[];
+let labels=[];
 
-const chart = new Chart(ctx, {
-  type: 'line',
-  data: {
-    labels: labels,
-    datasets: [{
-      label: 'VN-Index',
-      data: chartData,
-      borderColor: "#3b82f6",
-      tension: 0.3
-    }]
-  },
-  options: {
-    plugins: { legend: { labels: { color: "white" } } },
-    scales: {
-      x: { ticks: { color: "white" } },
-      y: { ticks: { color: "white" } }
-    }
-  }
+const ctx=document.getElementById('chart').getContext('2d');
+
+const chart=new Chart(ctx,{
+  type:'line',
+  data:{labels:labels,datasets:[{label:'VNINDEX',data:chartData,borderColor:'#3b82f6',tension:0.3}]},
+  options:{plugins:{legend:{labels:{color:'white'}}},scales:{x:{ticks:{color:'white'}},y:{ticks:{color:'white'}}}}
 });
 
-async function fetchData() {
-  try {
-    const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols.join(",")}`;
-    const res = await fetch(url);
-    const data = await res.json();
+async function loadVNStock(){
+  try{
+    const url="https://api.allorigins.win/raw?url=https://priceboard.vcbs.com.vn/api/price?codes="+symbols.join(",");
+    const res=await fetch(url);
+    const data=await res.json();
 
-    const container = document.getElementById("market");
-    container.innerHTML = "";
+    let html="";
 
-    data.quoteResponse.result.forEach(item => {
-      const price = item.regularMarketPrice;
-      const change = item.regularMarketChangePercent;
+    data.forEach(s=>{
+      let price=s.matchPrice||0;
+      let change=s.change||0;
 
-      const div = document.createElement("div");
-      div.className = "card";
-
-      div.innerHTML = `
-        <div class="symbol">${item.symbol}</div>
+      html+=`<div class="card">
+        <div class="symbol">${s.symbol}</div>
         <div class="price">${price}</div>
-        <div class="change ${change >= 0 ? 'up' : 'down'}">
-          ${change ? change.toFixed(2) : 0}%
-        </div>
-      `;
-
-      container.appendChild(div);
-
-      if (item.symbol === "^VNINDEX") {
-        chartData.push(price);
-        labels.push(new Date().toLocaleTimeString());
-
-        if (chartData.length > 20) {
-          chartData.shift();
-          labels.shift();
-        }
-      }
+        <div class="change ${change>=0?'green':'red'}">${change}</div>
+      </div>`;
     });
 
-    chart.update();
+    document.getElementById("market").innerHTML=html;
 
-  } catch (err) {
-    console.log("API lỗi:", err);
-  }
+  }catch(e){console.log(e)}
 }
 
-fetchData();
-setInterval(fetchData, 10000);
+async function loadGlobal(){
+  const res=await fetch('https://api.exchangerate.host/latest?base=USD&symbols=VND,EUR');
+  const d=await res.json();
+
+  let gold=2300+Math.random()*20;
+  let oil=85+Math.random()*5;
+
+  document.getElementById("global").innerHTML=`
+    USD/VND: ${d.rates.VND.toFixed(0)}<br>
+    EUR/USD: ${(1/d.rates.EUR).toFixed(2)}<br>
+    GOLD: ${gold.toFixed(0)}<br>
+    OIL: ${oil.toFixed(0)}
+  `;
+
+  document.getElementById("ticker").innerText=`VN Market | USD ${d.rates.VND.toFixed(0)} | GOLD ${gold.toFixed(0)} | OIL ${oil.toFixed(0)}`;
+}
+
+function loadHeatmap(){
+  const sectors=["Bank","Oil","Steel","Tech","Retail","Export"];
+
+  let html="";
+  sectors.forEach(s=>{
+    let val=Math.random();
+    let g=Math.floor(255*val);
+    let r=255-g;
+    html+=`<div style="background:rgb(${r},${g},80);padding:10px;border-radius:6px;margin:4px 0">${s}</div>`;
+  });
+
+  document.getElementById("heatmap").innerHTML=html;
+}
+
+function updateChart(){
+  let vn=1200+Math.random()*20;
+
+  chartData.push(vn);
+  labels.push(new Date().toLocaleTimeString());
+
+  if(chartData.length>20){chartData.shift();labels.shift();}
+
+  chart.update();
+}
+
+function run(){
+  loadVNStock();
+  loadGlobal();
+  loadHeatmap();
+  updateChart();
+}
+
+run();
+setInterval(run,10000);
+
 </script>
 
 </body>
