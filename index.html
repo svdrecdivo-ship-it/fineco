@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nam Terminal Ultra</title>
+<title>Nam Terminal Dense</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -19,126 +19,110 @@
 
 body{margin:0;font-family:Inter;background:var(--bg);color:var(--text)}
 
-header{
-  padding:18px;
-  text-align:center;
-  font-size:22px;
-  font-weight:700;
-  background:#020617;
-  border-bottom:1px solid var(--border);
-}
+header{padding:12px;text-align:center;background:#020617;font-size:18px}
 
-.ticker{
-  background:#000;
-  color:#22c55e;
-  padding:10px;
-  font-size:15px;
-}
+.ticker{background:#000;color:#22c55e;padding:6px;font-size:14px}
 
 .container{
   display:grid;
-  grid-template-columns:2.5fr 1fr;
-  gap:12px;
-  padding:12px;
+  grid-template-columns:1.5fr 1fr;
+  gap:8px;
+  padding:8px;
+  height:calc(100vh - 70px);
 }
 
 .panel{
   background:var(--panel);
   border:1px solid var(--border);
-  border-radius:10px;
-  padding:12px;
+  border-radius:8px;
+  padding:8px;
+  display:flex;
+  flex-direction:column;
 }
 
 .title{
-  font-size:16px;
+  font-size:13px;
   font-weight:600;
-  margin-bottom:10px;
-  border-bottom:1px solid var(--border);
-  padding-bottom:6px;
+  margin-bottom:6px;
 }
 
 .market-grid{
   display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:10px;
+  grid-template-columns:repeat(6,1fr);
+  gap:6px;
 }
 
 .card{
   background:#020617;
-  padding:12px;
-  border-radius:8px;
+  padding:6px;
+  border-radius:6px;
   text-align:center;
 }
 
-.symbol{font-size:14px;color:#9ca3af}
-.price{font-size:20px;font-weight:600}
-.change{font-size:14px}
+.symbol{font-size:11px;color:#9ca3af}
+.price{font-size:14px;font-weight:600}
+.change{font-size:11px}
 
 .green{color:var(--green)}
 .red{color:var(--red)}
 
-.big-number{
-  font-size:28px;
+.big{
+  font-size:20px;
   font-weight:700;
 }
 
-.info-box{
+.grid2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+}
+
+.small-box{
   background:#020617;
-  padding:10px;
-  border-radius:8px;
-  margin-bottom:10px;
+  padding:6px;
+  border-radius:6px;
+  font-size:12px;
 }
 
 .heatmap{
   display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:8px;
+  grid-template-columns:repeat(3,1fr);
+  gap:5px;
 }
 
-.box{
-  padding:12px;
-  border-radius:6px;
-  text-align:center;
-  font-size:14px;
-}
+.box{padding:8px;border-radius:4px;font-size:11px;text-align:center}
 
-canvas{margin-top:10px}
+canvas{flex:1}
 
-footer{text-align:center;padding:10px;background:#000}
-
+footer{display:none}
 </style>
 </head>
 
 <body>
 
-<header>📊 NAM TERMINAL ULTRA</header>
-
+<header>📊 NAM TERMINAL DENSE</header>
 <div class="ticker" id="ticker">Loading...</div>
 
 <div class="container">
 
-<!-- LEFT -->
 <div class="panel">
-<div class="title">📈 VN MARKET SNAPSHOT</div>
+<div class="title">VN MARKET</div>
 <div class="market-grid" id="market"></div>
 
-<div class="title">📊 VNINDEX LIVE</div>
-<div class="big-number" id="vnindex">--</div>
-<canvas id="chart" height="100"></canvas>
+<div class="title">VNINDEX</div>
+<div class="big" id="vnindex">--</div>
+<canvas id="chart"></canvas>
 </div>
 
-<!-- RIGHT -->
 <div class="panel">
-<div class="title">🌍 GLOBAL</div>
-<div class="info-box" id="global"></div>
+<div class="title">GLOBAL</div>
+<div class="grid2" id="global"></div>
 
-<div class="title">🔥 HEATMAP</div>
+<div class="title">HEATMAP</div>
 <div class="heatmap" id="heatmap"></div>
 </div>
 
 </div>
-
-<footer>Trang web được thiết kế bởi Nam ko Hề</footer>
 
 <script>
 const symbols=["VCB","BID","CTG","HPG","FPT","MWG","GAS","SSI","VNM","TPB","MBB","ACB"];
@@ -150,8 +134,8 @@ const ctx=document.getElementById('chart').getContext('2d');
 
 const chart=new Chart(ctx,{
   type:'line',
-  data:{labels:labels,datasets:[{label:'VNINDEX',data:chartData,borderColor:'#3b82f6'}]},
-  options:{plugins:{legend:{labels:{color:'white'}}},scales:{x:{ticks:{color:'white'}},y:{ticks:{color:'white'}}}}
+  data:{labels:labels,datasets:[{data:chartData,borderColor:'#3b82f6',pointRadius:0}]},
+  options:{plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:false}}}
 });
 
 async function loadVN(){
@@ -161,44 +145,41 @@ async function loadVN(){
     const data=await res.json();
 
     let html="";
-
     data.forEach(s=>{
-      let price=s.matchPrice||0;
-      let change=s.change||0;
-
+      let p=s.matchPrice||0;
+      let c=s.change||0;
       html+=`<div class="card">
         <div class="symbol">${s.symbol}</div>
-        <div class="price">${price}</div>
-        <div class="change ${change>=0?'green':'red'}">${change}</div>
+        <div class="price">${p}</div>
+        <div class="change ${c>=0?'green':'red'}">${c}</div>
       </div>`;
     });
 
     document.getElementById("market").innerHTML=html;
 
-    let vn=1200+Math.random()*20;
-    document.getElementById("vnindex").innerText=vn.toFixed(2);
+    let vn=1200+Math.random()*10;
+    document.getElementById("vnindex").innerText=vn.toFixed(1);
 
     chartData.push(vn);
-    labels.push(new Date().toLocaleTimeString());
-
-    if(chartData.length>25){chartData.shift();labels.shift();}
+    labels.push("");
+    if(chartData.length>30){chartData.shift();labels.shift();}
     chart.update();
 
-  }catch(e){}
+  }catch{}
 }
 
 async function loadGlobal(){
   const res=await fetch('https://api.exchangerate.host/latest?base=USD&symbols=VND,EUR');
   const d=await res.json();
 
-  let gold=2300+Math.random()*20;
+  let gold=2300+Math.random()*10;
   let oil=85+Math.random()*5;
 
   document.getElementById("global").innerHTML=`
-    <div>USD/VND: <b>${d.rates.VND.toFixed(0)}</b></div>
-    <div>EUR/USD: <b>${(1/d.rates.EUR).toFixed(2)}</b></div>
-    <div>GOLD: <b>${gold.toFixed(0)}</b></div>
-    <div>OIL: <b>${oil.toFixed(0)}</b></div>
+    <div class="small-box">USD ${d.rates.VND.toFixed(0)}</div>
+    <div class="small-box">EUR ${(1/d.rates.EUR).toFixed(2)}</div>
+    <div class="small-box">GOLD ${gold.toFixed(0)}</div>
+    <div class="small-box">OIL ${oil.toFixed(0)}</div>
   `;
 
   document.getElementById("ticker").innerText=`USD ${d.rates.VND.toFixed(0)} | GOLD ${gold.toFixed(0)} | OIL ${oil.toFixed(0)}`;
@@ -209,8 +190,8 @@ function loadHeatmap(){
   let html="";
 
   sectors.forEach(s=>{
-    let val=Math.random();
-    let g=Math.floor(255*val);
+    let v=Math.random();
+    let g=Math.floor(255*v);
     let r=255-g;
     html+=`<div class="box" style="background:rgb(${r},${g},80)">${s}</div>`;
   });
